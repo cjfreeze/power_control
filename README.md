@@ -1,6 +1,6 @@
 # PowerControl
 
-PowerControl is a library for start-up and runtime configuration of embedded device power_control consumption settings.
+PowerControl is a library for start-up and runtime configuration of embedded device power consumption settings.
 
 ## Installation
 
