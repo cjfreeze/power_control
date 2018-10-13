@@ -28,7 +28,7 @@ defmodule PowerControl.MixProject do
     [
       maintainers: ["Chris Freeze"],
       licenses: ["Apache 2.0"],
-      links: %{}
+      links: %{"Github" => "https://github.com/cjfreeze/power_control"}
     ]
   end
 end

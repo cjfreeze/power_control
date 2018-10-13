@@ -1,6 +1,6 @@
 # PowerControl
 
-PowerControl is a library for start-up and runtime configuration of embedded device power_control consumption settings.
+PowerControl is a library for start-up and runtime configuration of embedded device power_control consumption settings. This can be used to decrease power usage of embedded devices or increase their performance. For more information, see the benchmarks section.
 
 ## Installation
 
@@ -32,3 +32,21 @@ config :power_control,
   disable_leds: true
 ```
 
+## Benchmarks
+
+Lets take a look at the following fibonacci benchmark run on a Raspberry Pi Zero W:
+
+```
+iex(1)> PowerControl.cpu_info(:cpu0).speed
+700000
+iex(2)> PowerTest.bench_fib(145862)
+"11611628 μs"
+iex(3)> PowerControl.set_cpu_governor(:cpu0, :performance)
+{:ok, :performance}
+iex(4)> PowerControl.cpu_info(:cpu0).speed
+1000000
+iex(5)> PowerTest.bench_fib(145862)
+"8332247 μs"
+```
+
+Just by changing the CPU governor at runtime to `:performance`, we see a significant increase in benchmark speed. If you compare the ratios of the two benchmarks to the ratios of the clock speeds, you can see they are almost the same (Benchmark: 0.71, CPU clock: 0.7).
