@@ -4,6 +4,21 @@ defmodule PowerControl do
   """
   alias PowerControl.{CPU, LED, HDMI}
 
+  def shoehorn_spec do
+    {__MODULE__, :init, []}
+  end
+
+  @doc false
+  def init do
+    with :ok <- CPU.startup(),
+         :ok <- HDMI.startup(),
+         :ok <- LED.startup() do
+      :ok
+    else
+    _ -> :error
+    end
+  end
+
   @doc """
   Lists system CPUS.
 
