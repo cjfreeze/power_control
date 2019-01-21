@@ -14,8 +14,8 @@ defmodule PowerControl.Application do
     :ok = CPU.startup()
     :ok = HDMI.startup()
     :ok = LED.startup()
-    children = [CPU, LED]
-
+    # children = [CPU, LED]
+    children = []
     opts = [strategy: :one_for_one, name: PowerControl.Supervisor]
     Supervisor.start_link(children, opts)
   end
