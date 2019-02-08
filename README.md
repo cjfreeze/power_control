@@ -34,7 +34,7 @@ config :power_control,
 
 ## Benchmarks
 
-Lets take a look at the following fibonacci benchmark run on a Raspberry Pi Zero W:
+Lets take a look at the following fibonacci benchmark run on a Raspberry Pi Zero W using different [CPU scaling governors](https://wiki.archlinux.org/index.php/CPU_frequency_scaling#Scaling_governors):
 
 ```
 iex(1)> PowerControl.cpu_info(:cpu0).speed
