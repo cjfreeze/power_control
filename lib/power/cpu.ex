@@ -10,26 +10,35 @@ defmodule PowerControl.CPU do
   }
 
   @doc false
-  def startup do
-    cpus = list_cpus()
-
-    if(startup_governor = Application.get_env(:power_control, :cpu_governor)) do
+  def init do
+    with {:ok, cpus} <- list_cpus(),
+         startup_governor when not is_nil(startup_governor) <-
+           Application.get_env(:power_control, :cpu_governor) do
       Enum.each(cpus, fn cpu ->
-        governors = list_governors(cpu)
-        {:ok, ^startup_governor} = set_governor(cpu, startup_governor, governors)
+        {:ok, ^startup_governor} = set_governor(cpu, startup_governor)
       end)
+    else
+      nil -> {:error, :no_startup_governor_configured}
+      error -> error
     end
-    :ok
   end
 
+  @doc false
   def cpu_dir do
     Application.get_env(:power_control, :cpu_dir, @default_cpu_dir)
   end
 
+  @doc false
   def list_cpus do
     cpu_dir()
-    |> File.ls!()
-    |> Enum.filter(&filter_cpus/1)
+    |> File.ls()
+    |> case do
+      {:ok, list} ->
+        {:ok, Enum.filter(list, &filter_cpus/1)}
+
+      {:error, reason} ->
+        {:error, reason}
+    end
   end
 
   defp filter_cpus("cpu" <> rest) do
@@ -38,33 +47,43 @@ defmodule PowerControl.CPU do
 
   defp filter_cpus(_), do: false
 
+  @doc false
   def list_governors(cpu) do
     "#{cpu_dir()}#{cpu}/cpufreq/#{@governors_file_name}"
-    |> File.read!()
-    |> String.split()
-    |> Enum.map(&:"#{&1}")
+    |> File.read()
+    |> case do
+      {:ok, contents} ->
+        governors =
+          contents
+          |> String.split()
+          |> Enum.map(&:"#{&1}")
+
+        {:ok, governors}
+
+      {:error, reason} ->
+        {:error, reason}
+    end
   end
 
-  def get_governors(state, cpu) do
-    get_in(state, [:cpus, cpu, :governors]) || {:error, :cpu_not_found}
-  end
-
-  def set_governor(cpu, governor, valid_governors) do
+  @doc false
+  def set_governor(cpu, governor) do
     file_path = "#{cpu_dir()}#{cpu}/cpufreq/#{@governor_file_name}"
 
-    with {:governor, true} <- {:governor, governor in valid_governors},
-         {:file, true} <- {:file, File.exists?(file_path)},
+    with {:file, true} <- {:file, File.exists?(file_path)},
+         {:ok, valid_governors} <- list_governors(cpu),
+         {:governor, true} <- {:governor, governor in valid_governors},
          :ok <- File.write(file_path, "#{governor}") do
       {:ok, governor}
     else
-      {:governor, false} -> {:error, :invalid_governor}
       {:file, false} -> {:error, :governor_file_not_found}
+      {:governor, false} -> {:error, :invalid_governor}
       {:error, reason} -> {:error, reason}
     end
   end
 
-  def cpu_stats(cpu) do
-    with true <- Map.has_key?(list_cpus(), cpu) do
+  @doc false
+  def cpu_info(cpu) do
+    with ^cpu <- Enum.find(list_cpus(), &(&1 == cpu)) do
       for {key, file} <- @info_files do
         info_path = "#{cpu_dir()}#{cpu}/cpufreq/#{file}"
 

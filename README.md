@@ -2,6 +2,8 @@
 
 PowerControl is a library for start-up and runtime configuration of embedded device power consumption settings. This can be used to decrease power usage of embedded devices or increase their performance. For more information, see the benchmarks section.
 
+[![Hex](https://img.shields.io/hexpm/v/power_control.svg?style=flat)](https://hexdocs.pm/power_control/PowerControl.html)
+
 ## Installation
 
 Add `power_control` to your list of dependencies in `mix.exs`:
@@ -31,6 +33,10 @@ config :power_control,
   disable_hdmi: true,
   disable_leds: true
 ```
+
+## What governors can I use?
+
+Governors are dependant on hardware, and while it's possible to guess what governors you have access to based on your device, the best way to be sure is to run `PowerControl.list_cpu_governors()` in your nerves iex shell (on the device you want to identify) to see a list of atoms representing your device's supported governors. For a more detailed walkthough, check out the [docs](https://hexdocs.pm/power_control/PowerControl.html).
 
 ## Benchmarks
 

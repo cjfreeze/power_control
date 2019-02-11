@@ -3,7 +3,7 @@ defmodule PowerControl.HDMI do
   require Logger
 
   @doc false
-  def startup do
+  def init do
     if Application.get_env(:power_control, :disable_hdmi) do
       disable_hdmi()
     end
