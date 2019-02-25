@@ -40,7 +40,7 @@ Governors are dependant on hardware, and while it's possible to guess what gover
 
 ## Benchmarks
 
-Lets take a look at the following fibonacci benchmark run on a Raspberry Pi Zero W:
+Lets take a look at the following fibonacci benchmark run on a Raspberry Pi Zero W using different [`CPUFreq`](https://www.kernel.org/doc/html/v4.15/admin-guide/pm/cpufreq.html) settings:
 
 ```
 iex(1)> PowerControl.cpu_info(:cpu0).speed
