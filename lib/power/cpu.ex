@@ -34,7 +34,12 @@ defmodule PowerControl.CPU do
     |> File.ls()
     |> case do
       {:ok, list} ->
-        {:ok, Enum.filter(list, &filter_cpus/1)}
+        cpus =
+          list
+          |> Enum.filter(&filter_cpus/1)
+          |> Enum.map(&String.to_atom/1)
+
+        {:ok, cpus}
 
       {:error, reason} ->
         {:error, reason}
@@ -83,9 +88,10 @@ defmodule PowerControl.CPU do
 
   @doc false
   def cpu_info(cpu) do
-    with ^cpu <- Enum.find(list_cpus(), &(&1 == cpu)) do
+    with {:ok, cpus} <- list_cpus(),
+         ^cpu <- Enum.find(cpus, &(&1 == cpu)) do
       for {key, file} <- @info_files do
-        info_path = "#{cpu_dir()}#{cpu}/cpufreq/#{file}"
+        info_path = "#{cpu_dir()}/#{cpu}/cpufreq/#{file}"
 
         with {:ok, body} <- File.read(info_path),
              {value, _} <- Integer.parse(body) do
