@@ -94,11 +94,16 @@ defmodule PowerControl do
   end
 
   @doc """
-  Returns an info map for a CPU.
+  Returns an info map for a CPU. If the CPU does not exist, a `File` error is returned.
 
   ```
   iex> cpu_info(:cpu0)
   %{max_speed: 1000000, min_speed: 700000, speed: 1000000}
+  ```
+
+  ```
+  iex> cpu_info(:bad_cpu)
+  {:error, :enoent}
   ```
   """
   def cpu_info(cpu) do

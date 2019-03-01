@@ -34,7 +34,12 @@ defmodule PowerControl.CPU do
     |> File.ls()
     |> case do
       {:ok, list} ->
-        {:ok, Enum.filter(list, &filter_cpus/1)}
+        cpus =
+          list
+          |> Enum.filter(&filter_cpus/1)
+          |> Enum.map(&String.to_atom/1)
+
+        {:ok, cpus}
 
       {:error, reason} ->
         {:error, reason}
@@ -83,21 +88,30 @@ defmodule PowerControl.CPU do
 
   @doc false
   def cpu_info(cpu) do
-    with ^cpu <- Enum.find(list_cpus(), &(&1 == cpu)) do
-      for {key, file} <- @info_files do
-        info_path = "#{cpu_dir()}#{cpu}/cpufreq/#{file}"
+    case list_cpus() do
+      {:ok, cpus} ->
+        Enum.find(cpus, &(&1 == cpu))
+        |> parse_cpu_info()
 
-        with {:ok, body} <- File.read(info_path),
-             {value, _} <- Integer.parse(body) do
-          {key, value}
-        else
-          _ -> {key, nil}
-        end
-      end
-      |> Enum.filter(fn {_, value} -> value end)
-      |> Enum.into(%{})
-    else
-      false -> {:error, :cpu_not_found}
+      error ->
+        error
     end
+  end
+
+  defp parse_cpu_info(nil), do: {:error, :cpu_not_found}
+
+  defp parse_cpu_info(cpu) do
+    for {key, file} <- @info_files do
+      info_path = "#{cpu_dir()}/#{cpu}/cpufreq/#{file}"
+
+      with {:ok, body} <- File.read(info_path),
+           {value, _} <- Integer.parse(body) do
+        {key, value}
+      else
+        _ -> {key, nil}
+      end
+    end
+    |> Enum.filter(fn {_, value} -> value end)
+    |> Enum.into(%{})
   end
 end
